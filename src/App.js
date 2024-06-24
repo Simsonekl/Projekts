@@ -1,22 +1,27 @@
 import styled from "styled-components";
 import React, { useState } from "react";
 import Axios from "axios";
+import searchIcon from './images/ikona wyszukiwania.png';
+import appIcon from './images/czapka2.png'; 
 
 const Container = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center;
+  font-family: 'Arial', sans-serif;
 `;
 
 const Header = styled.div`
-  background-color: #ffdcd1; /* Kolor tła dostosowany do deserów */
-  color: black; /* Kolor tekstu zmieniony na czarny */
+  background-color: #1F2E2B; /* Kolor tła dostosowany do deserów */
+  color: #f9c6cf; /* Kolor tekstu zmieniony na różowy */
   display: flex;
-  justify-content: space-between;
-  flex-direction: row;
+  justify-content: center;
+  flex-direction: column;
   align-items: center;
   padding: 20px;
   font-size: 25px;
   font-weight: bold;
+  width: 100%;
   box-shadow: 0 3px 6px 0 #555;
 `;
 
@@ -24,9 +29,10 @@ const AppNameComponent = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
+  margin-bottom: 20px; /* Odstęp między nazwą aplikacji a paskiem wyszukiwania */
 `;
 
-const AppIcon = styled.img`
+const AppIcon = styled.img` 
   width: 36px;
   height: 36px;
   margin: 2px;
@@ -35,11 +41,18 @@ const AppIcon = styled.img`
 const SearchComponent = styled.div`
   display: flex;
   flex-direction: row;
-  padding: 10px 10px;
+  padding: 10px;
   border-radius: 6px;
-  margin-left: 20px;
-  width: 50%;
-  background-color: #fff9eb; /* Tło pola wyszukiwania zmienione na kremowe */
+  background-color: #ffffff; /* Tło pola wyszukiwania zmienione na białe */
+  width: 50%; /* Szerokość pola wyszukiwania */
+  max-width: 600px; /* Maksymalna szerokość pola wyszukiwania */
+  box-shadow: 0 3px 6px 0 #aaa; /* Dodanie cienia dla lepszego wyglądu */
+  align-items: center; /* Wycentrowanie zawartości w pionie */
+`;
+
+const SearchIcon = styled.img`
+  width: 24px;
+  height: 24px;
 `;
 
 const SearchInput = styled.input`
@@ -48,6 +61,7 @@ const SearchInput = styled.input`
   margin-left: 15px;
   font-size: 16px;
   font-weight: bold;
+  flex-grow: 1;
 `;
 
 const RecipeList = styled.div`
@@ -56,19 +70,26 @@ const RecipeList = styled.div`
   flex-wrap: wrap;
   padding: 30px;
   justify-content: space-evenly;
+  width: 100%;
+  max-width: 1200px;
 `;
 
 const RecipeContainer = styled.div`
   display: flex;
   flex-direction: column;
-  padding: 10px;
+  padding: 20px;
   width: 300px;
   box-shadow: 0 3px 10px 0 #aaa;
-  gap: 30px;
+  margin: 20px;
+  border-radius: 8px;
+  background-color: #fff;
 `;
 
-const Image = styled.div`
+const Image = styled.img`
+  width: 100%;
   height: 180px;
+  object-fit: cover;
+  border-radius: 8px;
 `;
 
 const RecipeName = styled.div`
@@ -78,42 +99,33 @@ const RecipeName = styled.div`
   margin: 10px 0;
 `;
 
-const Ingredients = styled.div`
+const Button = styled.div`
   font-size: 18px;
-  border: solid 1px green;
-  color: black;
+  border: solid 1px ${props => props.color};
+  color: ${props => props.color};
   margin: 10px 0;
   cursor: pointer;
   padding: 10px 15px;
   border-radius: 3px;
-  color: green;
   text-align: center;
-`;
+  transition: all 0.3s ease;
 
-const MoreText = styled.div`
-  font-size: 18px;
-  border: solid 1px red;
-  color: black;
-  margin: 10px 0;
-  cursor: pointer;
-  padding: 10px 15px;
-  border-radius: 3px;
-  color: red;
-  text-align: center;
+  &:hover {
+    background-color: ${props => props.color};
+    color: white;
+  }
 `;
 
 const RecipeComponent = (props) => {
   const { recipeObj } = props;
 
   return (
-    <RecipeList>
-      <RecipeContainer>
-        <img src={recipeObj.image} alt="Avatar" />
-        <RecipeName> {recipeObj.label}</RecipeName>
-        <Ingredients> Ingredients </Ingredients>
-        <MoreText onClick={() => window.open(recipeObj.url)}> See More </MoreText>
-      </RecipeContainer>
-    </RecipeList>
+    <RecipeContainer>
+      <Image src={recipeObj.image} alt="Avatar" />
+      <RecipeName>{recipeObj.label}</RecipeName>
+      <Button color="green">Ingredients</Button>
+      <Button color="red" onClick={() => window.open(recipeObj.url)}>See More</Button>
+    </RecipeContainer>
   );
 };
 
@@ -122,8 +134,12 @@ function App() {
   const [recipeList, updateRecipeList] = useState([]);
 
   const fetchRecipe = async (searchString) => {
-    const response = await Axios.get(`https://api.edamam.com/api/recipes/v2?type=public&q=${searchString}&app_id=fcc7bbfb&app_key=befe4c257bf6d3a971e1103540f23972`);
-    updateRecipeList(response.data.hits);
+    try {
+      const response = await Axios.get(`https://api.edamam.com/api/recipes/v2?type=public&q=${searchString}&app_id=fcc7bbfb&app_key=befe4c257bf6d3a971e1103540f23972`);
+      updateRecipeList(response.data.hits);
+    } catch (error) {
+      console.error("Error fetching recipes:", error);
+    }
   };
 
   const textChange = (event) => {
@@ -136,20 +152,20 @@ function App() {
     <Container>
       <Header>
         <AppNameComponent>
-          <AppIcon src="/recipes-svgrepo-com.svg" />
-          Delicje Szymona {/* Zmieniona nazwa aplikacji */}
+          <AppIcon src={appIcon} /> {/* Użycie poprawionego importu */}
+          Delicje Szymona 
         </AppNameComponent>
 
         <SearchComponent>
-          <img src="/search-icon.svg" alt="search" />
+          <SearchIcon src={searchIcon} alt="search" />
           <SearchInput placeholder="szukaj przepisu" onChange={textChange} />
         </SearchComponent>
       </Header>
 
       <RecipeList>
-        {recipeList.length &&
-          recipeList.map((recipeObj) => (
-            <RecipeComponent recipeObj={recipeObj.recipe} />
+        {recipeList.length > 0 &&
+          recipeList.map((recipeObj, index) => (
+            <RecipeComponent key={index} recipeObj={recipeObj.recipe} />
           ))}
       </RecipeList>
     </Container>
